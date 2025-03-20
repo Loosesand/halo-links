@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://www.huashuimao.cn/upload/01e955ad01d6aba306003cefa757a4a6_1.jpg">
+    <base href="https://www.huashuimao.cn" target="_blank">
+    <title>群聊广场</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f7f9fc;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .header {
+            padding: 18px 20px;
+            background: linear-gradient(to right, #1abc9c, #3498db);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            color: white;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            margin-top: 5px;
+            opacity: 0.85;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            /* 添加这行使tabs自动换行 */
+            padding: 15px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            /* 移除以下横向滚动相关的样式 */
+            /* overflow-x: auto; */
+            /* white-space: nowrap; */
+            /* -webkit-overflow-scrolling: touch; */
+            /* scrollbar-width: none; */
+        }
+
+        /* 可以移除这个，因为不再需要隐藏滚动条 */
+        /* .tabs::-webkit-scrollbar {
+        display: none;
+    } */
+
+        /* 为tab添加下边距，确保换行后有足够间距 */
+        .tab {
+            padding: 8px 16px;
+            margin-right: 12px;
+            margin-bottom: 10px;
+            /* 添加这行，确保换行后的行间距 */
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+
+        .tab:hover {
+            background-color: #f5f9f8;
+        }
+
+        .tab.active {
+            background-color: #e8f7f0;
+            color: #1abc9c;
+            font-weight: 500;
+            border: 1px solid #c5ede3;
+            box-shadow: 0 2px 5px rgba(26, 188, 156, 0.1);
+        }
+
+        .tab-filter {
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+            background-color: #f7f9fc;
+            border: 1px solid #e5e5e5;
+        }
+
+        .tab-filter::after {
+            content: "▼";
+            font-size: 10px;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .tab-filter:hover::after {
+            transform: translateY(2px);
+        }
+
+        .group-list {
+            padding: 15px;
+        }
+
+        .group-item {
+            padding: 18px;
+            background-color: #fff;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+        }
+
+        .group-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .group-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .group-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-right: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-part {
+            width: 25px;
+            height: 25px;
+            background-size: cover;
+        }
+
+        .group-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-right: 15px;
+            object-fit: cover;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .group-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2c3e50;
+        }
+
+        .group-status {
+            font-size: 13px;
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+        }
+
+        .group-status::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #1abc9c;
+            margin-right: 6px;
+        }
+
+        .join-btn {
+            padding: 8px 22px;
+            background-color: #fff;
+            color: #1abc9c;
+            border: 1.5px solid #1abc9c;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            outline: none;
+        }
+
+        .join-btn:hover {
+            background-color: #1abc9c;
+            color: white;
+            box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
+        }
+
+        .join-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background-color: #fff;
+            border-radius: 15px;
+            width: 85%;
+            max-width: 340px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 22px;
+            color: #bbb;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background-color: #f5f5f5;
+            color: #777;
+        }
+
+        .qr-title {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 15px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #1abc9c, #3498db);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15px;
+            margin-bottom: 8px;
+            box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: #3498db;
+            font-weight: 500;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            max-width: 100%;
+            /* 确保容器不会超出父元素宽度 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-code::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            /* 使用百分比，使背景随图片大小变化 */
+            max-width: 200px;
+            /* 设置最大宽度 */
+            aspect-ratio: 1 / 1;
+            /* 保持1:1的宽高比 */
+            border-radius: 10px;
+            background: radial-gradient(circle at center, rgba(26, 188, 156, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .qr-code img {
+            width: 80%;
+            /* 使用百分比，使图片自适应 */
+            max-width: 180px;
+            /* 设置最大宽度 */
+            height: auto;
+            /* 高度自动调整，保持宽高比 */
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 3px solid white;
+            object-fit: contain;
+            /* 确保图片完整显示 */
+        }
+
+
+        .qr-tip {
+            text-align: center;
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 15px;
+            background-color: #f7f9fc;
+            padding: 8px 15px;
+            border-radius: 20px;
+            /* display: inline-block; */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 筛选弹窗 */
+        .filter-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+
+        .filter-content {
+            background-color: #fff;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            padding: 25px;
+            margin-top: 70px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .filter-title {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .filter-option {
+            padding: 10px 18px;
+            background-color: #f7f9fc;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+        }
+
+        .filter-option:hover {
+            background-color: #f0f7f4;
+            border-color: #d5e8e2;
+        }
+
+        .filter-option.active {
+            background-color: #e8f7f0;
+            color: #1abc9c;
+            border-color: #c5ede3;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(26, 188, 156, 0.15);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .loading::before {
+            content: "";
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e8f7f0;
+            border-top: 3px solid #1abc9c;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 页面滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+
+        /* 空状态提示 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state::before {
+            content: "📋";
+            font-size: 40px;
+            display: block;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <div class="header-title">如是言客服圈子</div>
+                <div class="header-subtitle">专业交流 · 资源共享</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active">全部</div>
+            <div class="tab tab-filter" id="filterBtn">筛选</div>
+        </div>
+
+        <div class="group-list" id="groupList">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 加群二维码弹窗 -->
+    <div class="modal" id="qrModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeModal">×</button>
+            <div class="qr-title">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">扫码加群</div>
+                </div>
+            </div>
+            <div class="qr-tip">长按扫码，或者使用微信扫一扫</div>
+            <div class="qr-code">
+                <img id="qrCodeImage" alt="QR Code">
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 筛选弹窗 -->
+    <div class="filter-modal" id="filterModal">
+        <div class="filter-content">
+            <button class="close-btn" id="closeFilterModal">×</button>
+            <div class="filter-title">筛选群类型</div>
+            <div class="filter-options" id="filterOptions">
+                <!-- 筛选选项将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量存储数据
+        let linkGroups = [];
+        let links = [];
+        let groupTypes = ['全部'];
+        let currentFilter = '全部';
+
+        // 需要排除的分组ID
+        const EXCLUDED_GROUP_ID = 'link-group-xXGJL';
+
+        // 获取链接分组数据
+        async function fetchLinkGroups() {
+            headers = {
+                'Authorization': 'Bearer pat_eyJraWQiOiJzNGxBLVREb05FaWNvNGY2OHBfc2dicDJLY2lSZGZsVkVnV3prcEx3YlY4IiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL3d3dy5odWFzaHVpbWFvLmNuIiwic3ViIjoiaHVhc2h1aW1hbyIsImlhdCI6MTc0MjM4ODA3MCwianRpIjoiZjkzYTBhZjAtOTAxYS1mYjlmLTY4OTUtNWU3Zjk5ODBmOTJlIiwicGF0X25hbWUiOiJwYXQtaHVhc2h1aW1hby14WXBOcyJ9.dHU_8f3fl2PYCoIPgQajNNKE2jMG90g0N4vPb56V0uhk_jhlRaRgs2D_dLk92Uy7uLTw-W1ZL7ELhIMB7tjbUzlq2hZXEEO_6ZUr_ihXceWJ6knbcYIjZCZ9hVol93y0lEtVIiDlo8ntcXUPoc_212ZUPOIV51uhiOM7pPtj3EqIIcXJyGpMJWbSYjviUddlJbKndA_ugv9xc21fnMK8nGb9y8Y_qvvZYig58xJ6TTZh9xfvSAKBDQ-D6AnQ-JSKHVoZVsAdskC4p0osSaDytyyjUBH1Qy22wUGE-Bg8o-UdJq08gNg-TkNpytr5e90-H3OYkr9Ay1FmbU5R6YrLQoetKto2DZOE-Mj_d9cGq5ICrEMWJgPKnmrr2YBmGj3WjQ3ufP1flCjswoVZjcXhMvjtWLx4rK7a3W9ypq4g1uG819I4kR0ZyMDhpG5VwLXtE0_B0z4LCch84Xehwv-K3BAgnWJPUSBNB2M7wIunqE3VkRKWdRQb_WoFRTpiOH-21t9hp7MZcmqxlvpD_-pngV5sO7GSka9-X0BM9q45XDic8cDKoO5ZTkPyuFZDabXgTlia4WeQ_xOQwew_CYNirTyNbqyElD3wW6zLnbEGh4vHBxYfLr8uMHnKvYv-XgacdPNzpzFi5RwsOSZfyki1OzIVDiey48ng5IM20uqUYP4'
+            }
+
+            try {
+                const response = await fetch('https://www.huashuimao.cn/apis/core.halo.run/v1alpha1/linkgroups?page=1&size=200', {
+                    method: 'GET',
+                    headers: headers
+                });
+                const data = await response.json();
+
+                // 过滤掉需要排除的分组
+                return (data.items || []).filter(group => group.metadata.name !== EXCLUDED_GROUP_ID);
+            } catch (error) {
+                console.error('获取链接分组失败:', error);
+                return [];
+            }
+        }
+
+        // 获取链接数据
+        async function fetchLinks() {
+            try {
+                const response = await fetch('https://www.huashuimao.cn/apis/core.halo.run/v1alpha1/links?page=1&size=200', {
+                    method: 'GET',
+                    headers: headers
+                });
+                const data = await response.json();
+
+                // 过滤掉属于被排除分组的链接
+                return (data.items || []).filter(link => link.spec.groupName !== EXCLUDED_GROUP_ID);
+            } catch (error) {
+                console.error('获取链接失败:', error);
+                return [];
+            }
+        }
+
+        // 初始化数据
+        async function initData() {
+            // 显示加载状态
+            document.getElementById('groupList').innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                // 获取数据
+                linkGroups = await fetchLinkGroups();
+                links = await fetchLinks();
+
+                // 提取所有的分组类型（用于筛选）
+                linkGroups.forEach(group => {
+                    const displayName = group.spec.displayName;
+                    if (!groupTypes.includes(displayName)) {
+                        groupTypes.push(displayName);
+                    }
+                });
+
+                // 渲染选项卡
+                renderTabs();
+
+                // 渲染筛选选项
+                renderFilterOptions();
+
+                // 渲染群组列表
+                renderGroups();
+            } catch (error) {
+                console.error('初始化数据失败:', error);
+                document.getElementById('groupList').innerHTML =
+                    '<div class="empty-state">加载失败，请稍后再试</div>';
+            }
+        }
+
+        // 渲染选项卡
+        function renderTabs() {
+            const tabsContainer = document.querySelector('.tabs');
+            // 清除现有选项卡，保留"全部"和"筛选"
+            tabsContainer.innerHTML = '<div class="tab active">全部</div>';
+
+            // 添加前4个分组作为选项卡，避免选项卡过多导致UI拥挤
+            const displayGroups = linkGroups.slice(0, 4);
+            displayGroups.forEach(group => {
+                const displayName = group.spec.displayName;
+                tabsContainer.innerHTML += `<div class="tab">${displayName}</div>`;
+            });
+
+            // 添加筛选按钮
+            tabsContainer.innerHTML += '<div class="tab tab-filter" id="filterBtn">筛选</div>';
+
+            // 重新绑定筛选按钮事件
+            document.getElementById('filterBtn').addEventListener('click', function () {
+                document.getElementById('filterModal').style.display = 'flex';
+            });
+
+            // 绑定选项卡点击事件
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    if (this.classList.contains('tab-filter')) return;
+
+                    // 更新选项卡状态
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    currentFilter = this.textContent;
+
+                    // 更新筛选按钮文本
+                    if (currentFilter !== '全部') {
+                        document.getElementById('filterBtn').textContent = `筛选：${currentFilter}`;
+                    } else {
+                        document.getElementById('filterBtn').textContent = '筛选';
+                    }
+
+                    // 渲染群组
+                    renderGroups();
+                });
+            });
+
+        }
+
+        // 渲染筛选选项
+        function renderFilterOptions() {
+            const filterOptions = document.getElementById('filterOptions');
+            filterOptions.innerHTML = '';
+
+            groupTypes.forEach(type => {
+                const option = document.createElement('div');
+                option.className = 'filter-option';
+                if (type === currentFilter) {
+                    option.classList.add('active');
+                }
+                option.textContent = type;
+
+                option.addEventListener('click', function () {
+                    // 更新筛选按钮文本
+                    if (type !== '全部') {
+                        document.getElementById('filterBtn').textContent = `筛选：${type}`;
+                    } else {
+                        document.getElementById('filterBtn').textContent = '筛选';
+                    }
+
+                    // 更新选项卡状态
+                    document.querySelectorAll('.tab').forEach(tab => {
+                        if (tab.textContent === type) {
+                            tab.classList.add('active');
+                        } else {
+                            tab.classList.remove('active');
+                        }
+                    });
+
+                    currentFilter = type;
+
+                    // 渲染群组
+                    renderGroups();
+
+                    // 关闭筛选弹窗
+                    document.getElementById('filterModal').style.display = 'none';
+                });
+
+                filterOptions.appendChild(option);
+            });
+        }
+
+        // 渲染群组列表
+        function renderGroups() {
+            const groupList = document.getElementById('groupList');
+            groupList.innerHTML = '';
+
+            // 显示加载状态
+            groupList.innerHTML = '<div class="loading">加载中...</div>';
+
+            // 筛选链接
+            let filteredLinks = links;
+            if (currentFilter !== '全部') {
+                // 找到对应分组的名称
+                const group = linkGroups.find(g => g.spec.displayName === currentFilter);
+                if (group) {
+                    const groupName = group.metadata.name;
+                    filteredLinks = links.filter(link => link.spec.groupName === groupName);
+                }
+            }
+
+            // 确保不显示被排除分组的链接
+            filteredLinks = filteredLinks.filter(link => link.spec.groupName !== EXCLUDED_GROUP_ID);
+
+            // 清除加载状态
+            groupList.innerHTML = '';
+
+            if (filteredLinks.length === 0) {
+                groupList.innerHTML = '<div class="empty-state">暂无相关群组</div>';
+                return;
+            }
+
+            // 渲染链接
+            filteredLinks.forEach(link => {
+                const groupItem = document.createElement('div');
+                groupItem.className = 'group-item';
+
+                // 获取链接所属分组
+                const group = linkGroups.find(g => g.metadata.name === link.spec.groupName);
+                const groupDisplayName = group ? group.spec.displayName : '未分类';
+
+                // 使用链接的logo或生成随机头像
+                let avatarHtml = '';
+                if (link.spec.logo) {
+                    avatarHtml = `<img src="${link.spec.logo}" alt="${link.spec.displayName}" class="group-logo">`;
+                } else {
+                    // 随机生成头像颜色 - 使用更美观的颜色组合
+                    const colors = [
+                        '#3498db', '#2ecc71', '#e74c3c', '#f39c12',
+                        '#9b59b6', '#1abc9c', '#d35400', '#c0392b'
+                    ];
+                    avatarHtml = `
+                        <div class="group-avatar">
+                            <div class="avatar-part" style="background-color: ${colors[Math.floor(Math.random() * colors.length)]}"></div>
+                            <div class="avatar-part" style="background-color: ${colors[Math.floor(Math.random() * colors.length)]}"></div>
+                            <div class="avatar-part" style="background-color: ${colors[Math.floor(Math.random() * colors.length)]}"></div>
+                            <div class="avatar-part" style="background-color: ${colors[Math.floor(Math.random() * colors.length)]}"></div>
+                        </div>
+                    `;
+                }
+
+                groupItem.innerHTML = `
+                    <div class="group-info">
+                        ${avatarHtml}
+                        <div>
+                            <div class="group-name">${link.spec.displayName}</div>
+                            <div class="group-status">${groupDisplayName}</div>
+                        </div>
+                    </div>
+                    <button class="join-btn" data-id="${link.metadata.name}" data-url="${link.spec.url}">加入</button>
+                `;
+
+                groupList.appendChild(groupItem);
+            });
+
+            // 添加加入按钮点击事件
+            document.querySelectorAll('.join-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const linkId = this.getAttribute('data-id');
+                    const url = this.getAttribute('data-url');
+                    showQrModal(linkId, url);
+                });
+            });
+        }
+
+        // 显示二维码弹窗
+        function showQrModal(linkId, url) {
+            // 查找对应的链接
+            const link = links.find(l => l.metadata.name === linkId);
+            if (link && link.spec.logo) {
+                // 如果有logo，使用logo作为二维码
+                document.getElementById('qrCodeImage').src = link.spec.logo;
+            }
+
+            // 显示弹窗
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+
+        // 关闭二维码弹窗
+        document.getElementById('closeModal').addEventListener('click', function () {
+            document.getElementById('qrModal').style.display = 'none';
+        });
+
+        // 点击弹窗外部关闭弹窗
+        document.getElementById('qrModal').addEventListener('click', function (event) {
+            if (event.target === this) {
+                this.style.display = 'none';
+            }
+        });
+
+        // 关闭筛选弹窗
+        document.getElementById('closeFilterModal').addEventListener('click', function () {
+            document.getElementById('filterModal').style.display = 'none';
+        });
+
+        // 点击筛选弹窗外部关闭弹窗
+        document.getElementById('filterModal').addEventListener('click', function (event) {
+            if (event.target === this) {
+                this.style.display = 'none';
+            }
+        });
+
+        // 添加错误处理和重试机制
+        function handleApiError(error, retryFunction, maxRetries = 3, delay = 1000) {
+            let retryCount = 0;
+
+            function retry() {
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    console.log(`重试第 ${retryCount} 次...`);
+                    setTimeout(() => {
+                        retryFunction();
+                    }, delay);
+                } else {
+                    console.error('达到最大重试次数，操作失败');
+                    document.getElementById('groupList').innerHTML =
+                        '<div class="empty-state">加载失败，请刷新页面重试</div>';
+                }
+            }
+
+            console.error('API请求错误:', error);
+            retry();
+        }
+
+        // 初始化
+        initData();
+    </script>
+</body>
+
+</html>
